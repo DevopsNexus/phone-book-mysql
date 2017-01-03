@@ -1,0 +1,15 @@
+version: '2'
+services:
+  nginx:
+    image: nginx
+    volumes:
+      - ./phonebook.conf:/etc/nginx/conf.d/phonebook.conf
+  phonebook:
+    build: .
+  mysql:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=phonebook
+      - MYSQL_USER=app
+      - MYSQL_PASSWORD=qwer
