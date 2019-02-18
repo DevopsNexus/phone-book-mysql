@@ -5,7 +5,7 @@ from flask_migrate import Migrate
 import os
 
 app = Flask(__name__)
-app.config.from_object('dbsecret')
+app.config.from_object('config.dbsecret')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
