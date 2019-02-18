@@ -6,6 +6,8 @@ services:
       - ./phonebook-nginx.conf:/etc/nginx/conf.d/phonebook.conf
   phonebook:
     build: .
+    environment:
+      - DATABASE=/phone-book/database/dbsecret.py
   mysql:
     image: mysql:5.7
     #    command: --default-authentication-plugin=mysql_native_password
