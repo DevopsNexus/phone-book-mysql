@@ -14,11 +14,11 @@ spec:
     spec:
       containers:
       - name: mysql
-        image: mysql
+        image: mysql:5.7
         ports:
         - containerPort: 3306
           name: mysql
-        ebv:
+        env:
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -50,6 +50,13 @@ spec:
   selector:
     app: mysql
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-config
+data:
+  database: /phone-book/config/dbsecret.py
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -74,6 +81,12 @@ spec:
           limits:
             cpu: 250m
             memory: 256Mi
+        env:
+        - name: DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: db-config
+              key: database
         ports:
         - containerPort: 8080
           name: http
