@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: app-migration
+spec:
+  template:
+    metadata:
+      name: app-migration
+    spec:
+      restartPolicy: Never            
+      imagePullSecrets:
+      - name: registrypullsecret      
+      containers:
+      - name: app-migration
+        image: devopsnexus/phonebook
+        command: ["/bin/bash"]
+        args: ["/phone-book/init.sh"]
+        env:
+        - name: DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: db-config
+              key: database

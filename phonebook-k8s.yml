@@ -71,6 +71,8 @@ spec:
       labels:
         app: phonebook-app
     spec:
+      imagePullSecrets:
+      - name: registrypullsecret            
       containers:
       - name: phonebook
         image: devopsnexus/phonebook
@@ -91,7 +93,7 @@ spec:
         - containerPort: 8080
           name: http
         volumeMounts:
-        - mountPath: /phone-book/config/dbsecret.py
+        - mountPath: /phone-book/config/
           name: app-config
       volumes:
       - name: app-config
@@ -103,9 +105,72 @@ kind: Service
 metadata:
   name: phonebook-app-svc
 spec:
-  type: LoadBalancer
   ports:
   - port: 80
     targetPort: 8080
   selector:
     app: phonebook-app
+---    
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+          name: http
+        volumeMounts:
+        - mountPath: /etc/nginx/conf.d
+          name: nginx-config
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: nginx
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: app-migration
+spec:
+  template:
+    metadata:
+      name: app-migration
+    spec:
+      restartPolicy: Never            
+      imagePullSecrets:
+      - name: registrypullsecret      
+      containers:
+      - name: app-migration
+        image: devopsnexus/phonebook
+        command: ["/bin/bash"]
+        args: ["/phone-book/init.sh"]
+        env:
+        - name: DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: db-config
+              key: database  

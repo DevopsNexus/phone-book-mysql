@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phonebook-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phonebook-app
+  template:
+    metadata:
+      labels:
+        app: phonebook-app
+    spec:
+      imagePullSecrets:
+      - name: registrypullsecret            
+      containers:
+      - name: phonebook
+        image: devopsnexus/phonebook
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        env:
+        - name: DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: db-config
+              key: database
+        ports:
+        - containerPort: 8080
+          name: http
+        volumeMounts:
+        - mountPath: /phone-book/config/
+          name: app-config
+      volumes:
+      - name: app-config
+        secret:
+          secretName: app-config
